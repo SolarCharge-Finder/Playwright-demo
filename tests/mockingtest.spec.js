@@ -2,7 +2,8 @@
 
 import { test, expect } from '@playwright/test';
 
-const REQRES_BASE = 'https://reqres.in/api';
+const REQRES_BASE = 'https://reqres.in/api'; //from what i found doing actual requests gets flagged for bot prot.. bruh </3
+const REQRES_USER = 'https://jsonplaceholder.typicode.com/users/1';
 
 test.describe('Mocking Tests with ReqRes', () => {
 
@@ -52,30 +53,41 @@ test.describe('Mocking Tests with ReqRes', () => {
         expect(error).toBe('Missing password');
     });
 
-    test('mock user list', async ({ page }) => {
-        await page.route(`${REQRES_BASE}/users?page=2`, route =>
-        route.fulfill({
-            status: 200,
-            contentType: 'application/json',
-            body: JSON.stringify({
-            page: 2,
-            per_page: 6,
-            total: 12,
-            total_pages: 2,
-            data: [
-                { id: 7, email: 'mocked.user@reqres.in', first_name: 'Mock', last_name: 'User', avatar: 'https://reqres.in/img/faces/7-image.jpg' }
-            ]
-            }),
-        })
+    //real user request to compare with mocking wow - prolly could go near the top ig
+    test('real user request', async ({ request }) => {
+
+        const res = await request.get(REQRES_USER);
+        const data = await res.json();
+
+        console.log('Request Name:', data.name);
+
+        expect(data.name).toBeTruthy();
+    });
+
+    test('mock user request', async ({ page }) => {
+
+        await page.route(REQRES_USER, route =>
+            route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({
+                    id: 1,
+                    name: 'Mock User',
+                    email: 'user@mock.com'
+                })
+            })
         );
 
-        const firstName = await page.evaluate(async () => {
-        const res = await fetch('https://reqres.in/api/users?page=2');
-        const data = await res.json();
-        return data.data[0].first_name;
+        
+        await page.goto('about:blank'); //req for page.evaluate
+
+        const data = await page.evaluate(async () => {
+            const res = await fetch('https://jsonplaceholder.typicode.com/users/1');
+            return res.json();
         });
 
-        expect(firstName).toBe('Mock');
+        console.log('Mocked name:', data.name);
+        expect(data.name).toBe('Mock User'); //simple assertion to pass the test
     });
 
 });
