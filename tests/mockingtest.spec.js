@@ -10,7 +10,8 @@ test.describe('Mocking Tests with ReqRes', () => {
     test('mock successful login request', async ({ page }) => {
         // intercept browser request and provide fake token
         await page.route(`${REQRES_BASE}/login`, route =>
-        route.fulfill({
+        //return mocked response with token
+            route.fulfill({
             status: 200,
             contentType: 'application/json',
             body: JSON.stringify({ token: 'mocked_token_123' }),
@@ -19,6 +20,7 @@ test.describe('Mocking Tests with ReqRes', () => {
 
         // make the request inside page context
         const token = await page.evaluate(async () => {
+            //send the request
         const res = await fetch('https://reqres.in/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -27,13 +29,14 @@ test.describe('Mocking Tests with ReqRes', () => {
         const data = await res.json();
         return data.token;
         });
-
+        //assertion 
         expect(token).toBe('mocked_token_123');
     });
 
     test('mock failed login request', async ({ page }) => {
         await page.route(`${REQRES_BASE}/login`, route =>
         route.fulfill({
+            //mock failed request
             status: 400,
             contentType: 'application/json',
             body: JSON.stringify({ error: 'Missing password' }),
@@ -49,13 +52,14 @@ test.describe('Mocking Tests with ReqRes', () => {
         const data = await res.json();
         return data.error;
         });
-
+        //assertion
         expect(error).toBe('Missing password');
     });
 
     //real user request to compare with mocking wow - prolly could go near the top ig
     test('real user request', async ({ request }) => {
 
+        //Real User Request
         const res = await request.get(REQRES_USER);
         const data = await res.json();
 
@@ -65,7 +69,7 @@ test.describe('Mocking Tests with ReqRes', () => {
     });
 
     test('mock user request', async ({ page }) => {
-
+        //Mock User Request
         await page.route(REQRES_USER, route =>
             route.fulfill({
                 status: 200,
