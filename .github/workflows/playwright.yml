@@ -1,12 +1,13 @@
-#github actions (sachithra)
+#github actions (sachithra indrachapa)
 
-name: Playwright Tests
+name: Playwright Tests 
 # workflow runs when pushing to main/making a pr to main
 on:
   push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+    # workflow runs at 9:00 AM every day
 
 jobs:
   test:
